@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crystal Gee Designs</title>
+  <meta name="description" content="One of a kind furniture, made in Los Angeles. A new collection is coming soon.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --gold: #c9a45c;
+      --fuchsia: #d6337f;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 2.5rem 1.5rem;
+      background:
+        radial-gradient(ellipse at 50% 45%, rgba(214, 51, 127, 0.10), transparent 60%),
+        #0e0e0e;
+      color: #f2f2f2;
+      font-family: "Inter", system-ui, sans-serif;
+      font-weight: 300;
+      text-align: center;
+    }
+
+    header {
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #8a8a8a;
+    }
+
+    /* Everything under the name fades in after the chair animation */
+    .after {
+      animation: fadeIn 1.2s ease-out 3.6s both;
+    }
+
+    .logo {
+      margin: 2.5rem 0 0;
+      font-family: "Cormorant Garamond", "Times New Roman", serif;
+      font-weight: 500;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      letter-spacing: 0.06em;
+      color: var(--fuchsia);
+    }
+
+    .logo .inf {
+      font-family: "Times New Roman", serif;
+      margin: 0 0.35em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 7vw, 4.5rem);
+      font-weight: 300;
+      letter-spacing: 0.08em;
+    }
+
+    .line {
+      width: 4rem;
+      height: 1px;
+      background: linear-gradient(90deg, var(--fuchsia), var(--gold));
+      margin: 2rem auto;
+    }
+
+    .tagline {
+      margin: 0;
+      font-size: 1.05rem;
+      color: #cfcfcf;
+    }
+
+    .coming {
+      margin: 1.5rem 0 0;
+      font-size: 0.8rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    footer {
+      font-size: 0.8rem;
+      color: #8a8a8a;
+    }
+
+    footer a {
+      color: #f2f2f2;
+      text-decoration: none;
+      border-bottom: 1px solid var(--gold);
+      padding-bottom: 2px;
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    footer a:hover { color: var(--fuchsia); border-color: var(--fuchsia); }
+
+    /* Letters of the name: they start as a chair, then swirl into place (see script) */
+    h1 .word { display: inline-block; white-space: nowrap; }
+    h1 .char { display: inline-block; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .after { animation-delay: 0s; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>Los Angeles</header>
+
+  <main>
+    <h1 id="name" aria-label="Crystal Gee Designs">Crystal Gee Designs</h1>
+    <div class="line after"></div>
+    <p class="tagline after">One of a kind furniture, made in LA.</p>
+    <p class="coming after">A new collection is coming soon</p>
+    <div class="logo after" aria-label="C.G.D logo"><span class="inf">&infin;</span>C.G.D<span class="inf">&infin;</span></div>
+  </main>
+
+  <footer>
+    Follow along on Instagram &nbsp;
+    <a href="https://www.instagram.com/__.cgd.__/" target="_blank" rel="noopener">@__.cgd.__</a>
+  </footer>
+
+  <script>
+    // Split the name into letters so each one can move on its own
+    const name = document.getElementById("name");
+    name.innerHTML = name.textContent.split(" ").map(word =>
+      `<span class="word">${[...word].map(ch =>
+        `<span class="char" aria-hidden="true">${ch}</span>`).join("")}</span>`
+    ).join(" ");
+
+    // Outline of a chair (side view), one point per letter, on a 5 x 8 grid.
+    // Order: backrest top to bottom (leaning back slightly), seat back to front,
+    // then back and front legs.
+    const CHAIR = [
+      [-0.6, 0], [-0.45, 1], [-0.3, 2], [-0.15, 3], [0, 4],     // backrest
+      [0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5],           // seat
+      [0, 6], [0, 7], [0, 8],                                   // back leg
+      [5, 6], [5, 7], [5, 8],                                   // front leg
+    ];
+    const SHAPE_SCALE = 0.55; // letters are smaller while they form the furniture
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!reduceMotion) {
+      name.style.visibility = "hidden";
+
+      // Wait for the font so the letters' final positions are measured correctly
+      document.fonts.ready.then(() => {
+        const chars = [...name.querySelectorAll(".char")];
+        const box = name.getBoundingClientRect();
+        const unit = parseFloat(getComputedStyle(name).fontSize) * SHAPE_SCALE;
+        const centerX = box.left + box.width / 2;
+        const centerY = box.top + box.height / 2;
+        const small = `scale(${SHAPE_SCALE})`;
+
+        // Move a letter from its final spot to a point in a shape centered on the name
+        const placeIn = (shape, shapeCenterX, shapeCenterY, i, r) => {
+          const [x, y] = shape[i % shape.length];
+          const dx = centerX + (x - shapeCenterX) * unit - (r.left + r.width / 2);
+          const dy = centerY + (y - shapeCenterY) * unit - (r.top + r.height / 2);
+          return `translate(${dx}px, ${dy}px)`;
+        };
+
+        const glide = "cubic-bezier(0.65, 0, 0.35, 1)";
+        const total = 4.2; // seconds for the whole animation
+        chars.forEach((el, i) => {
+          const r = el.getBoundingClientRect();
+          const inChair = placeIn(CHAIR, 2.5, 4, i, r);
+
+          const appear = 0.2 + i * 0.07;     // letters draw the chair one by one
+          const toName = 2.2 + i * 0.04;     // then swirl into the name
+          el.animate([
+            { offset: 0, opacity: 0, transform: `${inChair} rotate(0deg) scale(0.2)` },
+            { offset: appear / total, opacity: 0, transform: `${inChair} rotate(0deg) scale(0.2)` },
+            { offset: (appear + 0.4) / total, opacity: 1, transform: `${inChair} rotate(0deg) ${small}` },
+            { offset: toName / total, opacity: 1, transform: `${inChair} rotate(0deg) ${small}`, easing: glide },
+            { offset: (toName + 1.2) / total, opacity: 1, transform: "translate(0, 0) rotate(360deg) scale(1)" },
+            { offset: 1, opacity: 1, transform: "translate(0, 0) rotate(360deg) scale(1)" },
+          ], { duration: total * 1000, fill: "both" });
+        });
+
+        name.style.visibility = "visible";
+      });
+    }
+  </script>
+</body>
+</html>
